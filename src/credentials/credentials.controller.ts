@@ -1,34 +1,37 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { CredentialsService } from './credentials.service';
 import { CreateCredentialDto } from './dto/create-credential.dto';
-import { UpdateCredentialDto } from './dto/update-credential.dto';
+import { AuthGuard } from '../guards/auth.guard';
+import { UserIdDto } from '../users/dto/userId.dto';
 
+@UseGuards(AuthGuard)
 @Controller('credentials')
 export class CredentialsController {
   constructor(private readonly credentialsService: CredentialsService) {}
-
-  @Post()
+  @Post('create')
   create(@Body() createCredentialDto: CreateCredentialDto) {
     return this.credentialsService.create(createCredentialDto);
   }
-
   @Get()
-  findAll() {
-    return this.credentialsService.findAll();
+  async findOne(
+    @Query('id', ParseIntPipe) id: number,
+    @Body() body: UserIdDto,
+  ) {
+    const { userId } = body;
+    return this.credentialsService.findCredentials(id, userId);
   }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.credentialsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCredentialDto: UpdateCredentialDto) {
-    return this.credentialsService.update(+id, updateCredentialDto);
-  }
-
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.credentialsService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number, body: UserIdDto) {
+    return this.credentialsService.remove(id, body.userId);
   }
 }

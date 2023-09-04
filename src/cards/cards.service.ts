@@ -1,26 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
+import { CardsRepository } from './cards.repository';
 
 @Injectable()
 export class CardsService {
-  create(createCardDto: CreateCardDto) {
-    return 'This action adds a new card';
-  }
+  constructor(private readonly cardsRepository: CardsRepository) {}
 
-  findAll() {
-    return `This action returns all cards`;
+  async create(createCardDto: CreateCardDto) {
+    const card = await this.cardsRepository.findCardByTitle(
+      createCardDto.title,
+    );
+    if (card) throw new ConflictException();
+    return this.cardsRepository.createCard(createCardDto);
   }
-
-  findOne(id: number) {
-    return `This action returns a #${id} card`;
+  async findOne(id: number, userId: number) {
+    const card = await this.cardsRepository.findCardById(id);
+    if (card.userId !== userId) throw new ForbiddenException();
+    if (!card) throw new NotFoundException();
+    return card;
   }
-
-  update(id: number, updateCardDto: UpdateCardDto) {
-    return `This action updates a #${id} card`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} card`;
+  async remove(id: number, userId: number) {
+    const card = await this.cardsRepository.findCardById(id);
+    if (card.userId !== userId) throw new ForbiddenException();
+    if (!card) throw new NotFoundException();
+    return this.cardsRepository.delete(id);
   }
 }

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersRepository {
@@ -18,6 +17,11 @@ export class UsersRepository {
         email,
         password,
       },
+    });
+  }
+  findUserById(id: number) {
+    return this.prisma.user.findFirst({
+      where: { id },
     });
   }
 }

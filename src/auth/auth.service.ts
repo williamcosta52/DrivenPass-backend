@@ -49,4 +49,12 @@ export class AuthService {
     );
     return { token };
   }
+
+  checkToken(token: string) {
+    const data = this.jwtService.verify(token, {
+      audience: this.AUDIENCE,
+      issuer: this.ISSUER,
+    });
+    return data;
+  }
 }

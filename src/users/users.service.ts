@@ -1,6 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
 
@@ -17,20 +21,9 @@ export class UsersService {
     const hashedPassword = bcrypt.hashSync(password, this.SALT);
     return await this.usersRepository.create(email, hashedPassword);
   }
-
-  findAll() {
-    return `This action returns all users`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async getUserById(id: number) {
+    const user = await this.usersRepository.findUserById(id);
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 }
